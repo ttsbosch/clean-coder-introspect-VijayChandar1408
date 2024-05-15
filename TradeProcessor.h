@@ -1,62 +1,59 @@
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <vector>
 
-struct TR
+#pragma once
+
+constexpr float LotSize = 100000;
+
+struct TradeDetails
 {
-    std::string SC;//SourceCurrency
-    std::string DC;//DestibationCurrency
+    std::string SourceCurrency;      // SourceCurrency
+    std::string DestinationCurrency; // DestinationCurrency
     float Lots;
     double Price;
 };
 
-class Processor
+class TradeProcessor
 {
 public:
-    void Process(std::istream& stream);
-    
-private:
-    static const float LotSize;
-    std::vector<std::string> SplitString(const std::string& str, char delimiter)
-    {
-        std::vector<std::string> tokens;
-        std::string token;
-        std::istringstream tokenStream(str);
-        while (std::getline(tokenStream, token, delimiter))
-        {
-            tokens.push_back(token);
-        }
-        return tokens;
-    }
+    void ProcessTrades(std::istream &stream);
 
-    bool intGetFromString(const std::string& str, int& value)
+private:
+    void storeTradeDetailsAsXML(std::vector<TradeDetails>& tradeDetails);
+};
+
+
+class TradeProcessorDataConverter
+{
+public:
+    static bool getIntFromString(const std::string &str, int &value)
     {
         try
         {
             value = std::stoi(str);
             return true;
         }
-        catch (const std::exception&)
+        catch (const std::exception &)
         {
             return false;
         }
     }
 
-    bool toDouble(const std::string& str, double& value)
+    static bool getDoubleFromString(const std::string &str, double &value)
     {
         try
         {
             value = std::stod(str);
             return true;
         }
-        catch (const std::exception&)
+        catch (const std::exception &)
         {
             return false;
         }
     }
 };
-const float Processor::LotSize = 100000;
 
 // int main()
 // {
@@ -73,4 +70,3 @@ const float Processor::LotSize = 100000;
 //     }
 //     return 0;
 // }
-

@@ -1,71 +1,88 @@
 #include "TradeProcessor.h"
-void Processor::Process(std::istream& stream)
+void TradeProcessor::ProcessTrades(std::istream &tradeInputFile)
+{
+
+    std::vector<std::string> trades;
+    std::string trade;
+
+    while (std::getline(tradeInputFile, trade))
     {
-
-        std::vector<std::string> items;
-        std::string item;
-        while (std::getline(stream, item))
-        {
-            items.push_back(item);
-        }
-
-        std::vector<TR> objects;
-        int lineCount = 1;
-        for (const auto& item : items)
-        {
-            std::vector<std::string> fields;
-
-            std::string t;
-            std::istringstream tStream(item);
-            while (std::getline(tStream, t, ','))
-            {
-                fields.push_back(t);
-            }
-            if (fields.size() != 3)
-            {
-                std::cout << "WARN: Line " << lineCount << " malformed. Only " << fields.size() << " field(s) found." << std::endl;
-                continue;
-            }
-            if (fields[0].length() != 6)
-            {
-                std::cout << "WARN: Trade currencies on line " << lineCount << " malformed: '" << fields[0] << "'" << std::endl;
-                continue;
-            }
-            int tam;
-            if (!intGetFromString(fields[1], tam))
-            {
-                std::cout << "WARN: Trade amount on line " << lineCount << " not a valid integer: '" << fields[1] << "'" << std::endl;
-            }
-            double tp;
-            if (!toDouble(fields[2], tp))
-            {
-                std::cout << "WARN: Trade price on line " << lineCount << " not a valid decimal: '" << fields[2] << "'" << std::endl;
-            }
-            std::string scc = fields[0].substr(0, 3);
-            std::string dcc = fields[0].substr(3, 3);
-            // calculate values
-            TR  obj;
-            obj.SC = scc;
-            obj.DC = dcc;
-            obj.Lots = tam / LotSize;
-            obj.Price = tp;
-            objects.push_back(obj);
-            lineCount++;
-        }
-
-        std::ostringstream xStream;
-        xStream << "<TradeRecords>" << std::endl;
-        for (const auto& record : objects) {
-            xStream << "\t<TradeRecord>" << std::endl;
-            xStream << "\t\t<SourceCurrency>" << record.SC << "</SourceCurrency>" << std::endl;
-            xStream << "\t\t<DestinationCurrency>" << record.DC << "</DestinationCurrency>" << std::endl;
-            xStream << "\t\t<Lots>" << record.Lots << "</Lots>" << std::endl;
-            xStream << "\t\t<Price>" << record.Price << "</Price>" << std::endl;
-            xStream << "\t</TradeRecord>" << std::endl;
-        }
-        xStream << "</TradeRecords>";
-        std::string xData = xStream.str();
-        std::ofstream outFile("output.xml"); // Output XML file
-        outFile << xData;
-        std::cout << "INFO: " << objects.size() << " trades processed" << std::endl;
+        trades.push_back(trade);
     }
+
+    std::vector<TradeDetails> tradeDetails;
+    int lineCount = 1;
+    for (const auto &trade : trades)
+    {
+        std::vector<std::string> tradeFields;
+
+        std::string tradeItem;
+        std::istringstream tradeStream(trade);
+
+        while (std::getline(tradeStream, tradeItem, ','))
+        {
+            tradeFields.push_back(tradeItem);
+        }
+
+        if (tradeFields.size() != 3)
+        {
+            std::cout << "WARN: Line " << lineCount << " malformed. Only " << tradeFields.size() << " field(s) found." << std::endl;
+            continue;
+        }
+
+        if (tradeFields[0].length() != 6)
+        {
+            std::cout << "WARN: Trade currencies on line " << lineCount << " malformed: '" << tradeFields[0] << "'" << std::endl;
+            continue;
+        }
+
+        int tradeAmount;
+        if (!TradeProcessorDataConverter::getIntFromString(tradeFields[1], tradeAmount))
+        {
+            std::cout << "WARN: Trade amount on line " << lineCount << " not a valid integer: '" << tradeFields[1] << "'" << std::endl;
+        }
+
+        double tradePrice;
+        if (!TradeProcessorDataConverter::getDoubleFromString(tradeFields[2], tradePrice))
+        {
+            std::cout << "WARN: Trade price on line " << lineCount << " not a valid decimal: '" << tradeFields[2] << "'" << std::endl;
+        }
+
+        std::string sourceCurrency = tradeFields[0].substr(0, 3);
+        std::string destinationCurrency = tradeFields[0].substr(3, 3);
+
+        // calculate values
+        TradeDetails obj;
+        obj.SourceCurrency = sourceCurrency;
+        obj.DestinationCurrency = destinationCurrency;
+        obj.Lots = tradeAmount / LotSize;
+        obj.Price = tradePrice;
+        tradeDetails.push_back(obj);
+
+        lineCount++;
+
+        
+    }
+
+    this->storeTradeDetailsAsXML(tradeDetails);
+}
+
+void TradeProcessor::storeTradeDetailsAsXML(std::vector<TradeDetails> &tradeDetails)
+{
+    std::ostringstream xmlStream;
+    xmlStream << "<TradeRecords>" << std::endl;
+    for (const auto &trade : tradeDetails)
+    {
+        xmlStream << "\t<TradeRecord>" << std::endl;
+        xmlStream << "\t\t<SourceCurrency>" << trade.SourceCurrency << "</SourceCurrency>" << std::endl;
+        xmlStream << "\t\t<DestinationCurrency>" << trade.DestinationCurrency << "</DestinationCurrency>" << std::endl;
+        xmlStream << "\t\t<Lots>" << trade.Lots << "</Lots>" << std::endl;
+        xmlStream << "\t\t<Price>" << trade.Price << "</Price>" << std::endl;
+        xmlStream << "\t</TradeRecord>" << std::endl;
+    }
+    xmlStream << "</TradeRecords>";
+    std::string xmlData = xmlStream.str();
+    std::ofstream outFile("tradeOutput.xml");
+    outFile << xmlData;
+    std::cout << "INFO: " << tradeDetails.size() << " trades processed" << std::endl;
+}
