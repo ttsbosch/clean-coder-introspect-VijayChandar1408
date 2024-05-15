@@ -65,20 +65,20 @@ void TradeProcessor::ProcessTrades(std::istream &tradeInputFile)
 
 void TradeProcessor::printTradeDetails(std::vector<TradeDetails> &tradeDetails)
 {
-    std::ostringstream xStream;
-    xStream << "<TradeRecords>" << std::endl;
-    for (const auto &record : tradeDetails)
+    std::ostringstream xmlStream;
+    xmlStream << "<TradeRecords>" << std::endl;
+    for (const auto &trade : tradeDetails)
     {
-        xStream << "\t<TradeRecord>" << std::endl;
-        xStream << "\t\t<SourceCurrency>" << record.SourceCurrency << "</SourceCurrency>" << std::endl;
-        xStream << "\t\t<DestinationCurrency>" << record.DestinationCurrency << "</DestinationCurrency>" << std::endl;
-        xStream << "\t\t<Lots>" << record.Lots << "</Lots>" << std::endl;
-        xStream << "\t\t<Price>" << record.Price << "</Price>" << std::endl;
-        xStream << "\t</TradeRecord>" << std::endl;
+        xmlStream << "\t<TradeRecord>" << std::endl;
+        xmlStream << "\t\t<SourceCurrency>" << trade.SourceCurrency << "</SourceCurrency>" << std::endl;
+        xmlStream << "\t\t<DestinationCurrency>" << trade.DestinationCurrency << "</DestinationCurrency>" << std::endl;
+        xmlStream << "\t\t<Lots>" << trade.Lots << "</Lots>" << std::endl;
+        xmlStream << "\t\t<Price>" << trade.Price << "</Price>" << std::endl;
+        xmlStream << "\t</TradeRecord>" << std::endl;
     }
-    xStream << "</TradeRecords>";
-    std::string xData = xStream.str();
-    std::ofstream outFile("output.xml"); // Output XML file
-    outFile << xData;
+    xmlStream << "</TradeRecords>";
+    std::string xmlData = xmlStream.str();
+    std::ofstream outFile("tradeOutput.xml");
+    outFile << xmlData;
     std::cout << "INFO: " << tradeDetails.size() << " trades processed" << std::endl;
 }
