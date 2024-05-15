@@ -21,7 +21,7 @@ public:
     void ProcessTrades(std::istream &stream);
 
 private:
-    void printTradeDetails(std::vector<TradeDetails>& tradeDetails);
+    void storeTradeDetailsAsXML(std::vector<TradeDetails>& tradeDetails);
 };
 
 

@@ -60,10 +60,14 @@ void TradeProcessor::ProcessTrades(std::istream &tradeInputFile)
         tradeDetails.push_back(obj);
 
         lineCount++;
+
+        
     }
+
+    this->storeTradeDetailsAsXML(tradeDetails);
 }
 
-void TradeProcessor::printTradeDetails(std::vector<TradeDetails> &tradeDetails)
+void TradeProcessor::storeTradeDetailsAsXML(std::vector<TradeDetails> &tradeDetails)
 {
     std::ostringstream xmlStream;
     xmlStream << "<TradeRecords>" << std::endl;
